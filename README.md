@@ -46,6 +46,7 @@ ATSS_X_101_32x8d_FPN_2x | Yes | 110ms | 44.8 | 45.1 | [Google](https://drive.goo
 ATSS_dcnv2_X_101_32x8d_FPN_2x | Yes | 143ms | 47.7 | 47.7 | [Google](https://drive.google.com/open?id=19E7vh7YCq0ZpvRIaswDMWGRmwcGK56Bz)/[Baidu](https://pan.baidu.com/s/1pOMZGb3UZb7u_lTqUk55Mw)
 ATSS_X_101_64x4d_FPN_2x | Yes | 112ms | 45.5 | 45.6 | [Google](https://drive.google.com/open?id=1ECj7mQwZowiTsSwDXU5Q_Ab2tG-Byhsk)/[Baidu](https://pan.baidu.com/s/1LxNkz0To_mGWGRbtzA78bw)
 ATSS_dcnv2_X_101_64x4d_FPN_2x | Yes | 144ms | 47.7 | 47.7 | [Google](https://drive.google.com/open?id=1Lmhtn71AgJC_6B5iqU8-PG_rYanKEr2k)/[Baidu](https://pan.baidu.com/s/1nzX-lUvZfnV--fj6OwsnmQ)
+
 [1] *The testing time is taken from [FCOS](https://github.com/tianzhi0549/FCOS), because our method only redefines positive and negative training samples without incurring any additional overhead.* \
 [2] *1x and 2x mean the model is trained for 90K and 180K iterations, respectively.* \
 [3] *All results are obtained with a single model and without any test time data augmentation such as multi-scale, flipping and etc..* \
