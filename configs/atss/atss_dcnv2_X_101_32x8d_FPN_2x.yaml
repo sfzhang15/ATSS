@@ -1,0 +1,53 @@
+MODEL:
+  META_ARCHITECTURE: "GeneralizedRCNN"
+  WEIGHT: "catalog://ImageNetPretrained/FAIR/20171220/X-101-32x8d"
+  RPN_ONLY: True
+  ATSS_ON: True
+  BACKBONE:
+    CONV_BODY: "R-101-FPN-RETINANET"
+  RESNETS:
+    STRIDE_IN_1X1: False
+    BACKBONE_OUT_CHANNELS: 256
+    NUM_GROUPS: 32
+    WIDTH_PER_GROUP: 8
+    STAGE_WITH_DCN: (False, False, True, True)
+    WITH_MODULATED_DCN: True
+    DEFORMABLE_GROUPS: 1
+  RETINANET:
+    USE_C5: False
+  ATSS:
+    ANCHOR_SIZES: (64, 128, 256, 512, 1024) # 8S
+    ASPECT_RATIOS: (1.0,)
+    SCALES_PER_OCTAVE: 1
+    USE_DCN_IN_TOWER: True
+    POSITIVE_TYPE: 'ATSS' # how to select positves: ATSS (Ours) , SSC (FCOS), IoU (RetinaNet)
+    TOPK: 9 # topk for selecting candidate positive samples from each level
+    REGRESSION_TYPE: 'BOX' # regressing from a 'BOX' or a 'POINT'
+DATASETS:
+  TRAIN: ("coco_2017_train",)
+  TEST: ("coco_2017_val",)
+INPUT:
+  MIN_SIZE_RANGE_TRAIN: (640, 800)
+  MAX_SIZE_TRAIN: 1333
+  MIN_SIZE_TEST: 800
+  MAX_SIZE_TEST: 1333
+DATALOADER:
+  SIZE_DIVISIBILITY: 32
+SOLVER:
+  BASE_LR: 0.01
+  WEIGHT_DECAY: 0.0001
+  STEPS: (120000, 160000)
+  MAX_ITER: 180000
+  IMS_PER_BATCH: 16
+  WARMUP_METHOD: "constant"
+TEST:
+  BBOX_AUG:
+    ENABLED: False
+    VOTE: True
+    VOTE_TH: 0.66
+    MERGE_TYPE: "soft-vote"
+    H_FLIP: True
+    SCALES: (400, 500, 600, 640, 700, 900, 1000, 1100, 1200, 1300, 1400, 1800)
+    SCALE_RANGES: [[96, 10000], [96, 10000], [64, 10000], [64, 10000], [64, 10000], [0, 10000], [0, 10000], [0, 256], [0, 256], [0, 192], [0, 192], [0, 96]]
+    MAX_SIZE: 3000
+    SCALE_H_FLIP: True

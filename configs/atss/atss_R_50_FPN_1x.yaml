@@ -1,0 +1,36 @@
+MODEL:
+  META_ARCHITECTURE: "GeneralizedRCNN"
+  WEIGHT: "catalog://ImageNetPretrained/MSRA/R-50"
+  RPN_ONLY: True
+  ATSS_ON: True
+  BACKBONE:
+    CONV_BODY: "R-50-FPN-RETINANET"
+  RESNETS:
+    BACKBONE_OUT_CHANNELS: 256
+  RETINANET:
+    USE_C5: False
+  ATSS:
+    ANCHOR_SIZES: (64, 128, 256, 512, 1024) # 8S
+    ASPECT_RATIOS: (1.0,)
+    SCALES_PER_OCTAVE: 1
+    USE_DCN_IN_TOWER: False
+    POSITIVE_TYPE: 'ATSS' # how to select positves: ATSS (Ours) , SSC (FCOS), IoU (RetinaNet)
+    TOPK: 9 # topk for selecting candidate positive samples from each level
+    REGRESSION_TYPE: 'BOX' # regressing from a 'BOX' or a 'POINT'
+DATASETS:
+  TRAIN: ("coco_2017_train",)
+  TEST: ("coco_2017_val",)
+INPUT:
+  MIN_SIZE_TRAIN: (800,)
+  MAX_SIZE_TRAIN: 1333
+  MIN_SIZE_TEST: 800
+  MAX_SIZE_TEST: 1333
+DATALOADER:
+  SIZE_DIVISIBILITY: 32
+SOLVER:
+  BASE_LR: 0.01
+  WEIGHT_DECAY: 0.0001
+  STEPS: (60000, 80000)
+  MAX_ITER: 90000
+  IMS_PER_BATCH: 16
+  WARMUP_METHOD: "constant"
