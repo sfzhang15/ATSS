@@ -161,23 +161,31 @@ class ATSSLossComputation(object):
                 is_pos = candidate_ious >= iou_thresh_per_gt[None, :]
 
                 # Limiting the final positive samples’ center to object
-                is_in_gts = []
+                anchor_num = anchors_cx_per_im.shape[0]
                 for ng in range(num_gt):
-                    l = anchors_cx_per_im[candidate_idxs[:, ng]] - bboxes_per_im[ng, 0]
-                    t = anchors_cy_per_im[candidate_idxs[:, ng]] - bboxes_per_im[ng, 1]
-                    r = bboxes_per_im[ng, 2] - anchors_cx_per_im[candidate_idxs[:, ng]]
-                    b = bboxes_per_im[ng, 3] - anchors_cy_per_im[candidate_idxs[:, ng]]
-                    is_in_gts.append(torch.stack([l, t, r, b], dim=1).min(dim=1)[0] > 0.01)
-                is_in_gts = torch.stack(is_in_gts, dim=1)
+                    candidate_idxs[:, ng] += ng * anchor_num
+                e_anchors_cx = anchors_cx_per_im.view(1, -1).expand(
+                    num_gt, anchor_num).contiguous().view(-1)
+                e_anchors_cy = anchors_cy_per_im.view(1, -1).expand(
+                    num_gt, anchor_num).contiguous().view(-1)
+                candidate_idxs = candidate_idxs.view(-1)
+                _l = e_anchors_cx[candidate_idxs].view(
+                    -1, num_gt) - bboxes_per_im[:, 0]
+                t = e_anchors_cy[candidate_idxs].view(
+                    -1, num_gt) - bboxes_per_im[:, 1]
+                r = bboxes_per_im[:, 2] - e_anchors_cx[candidate_idxs].view(-1, num_gt)
+                b = bboxes_per_im[:, 3] - e_anchors_cy[candidate_idxs].view(
+                    -1, num_gt)
+                is_in_gts = torch.stack([_l, t, r, b], dim=1).min(dim=1)[0] > 0.01
                 is_pos = is_pos & is_in_gts
 
                 # if an anchor box is assigned to multiple gts, the one with the highest IoU will be selected.
-                ious_inf = ious * 0 - INF
-                for ng in range(num_gt):
-                    ious_inf[candidate_idxs[is_pos[:, ng] == 1, ng], ng] = \
-                        ious[candidate_idxs[is_pos[:, ng] == 1, ng], ng]
-                anchors_to_gt_values, anchors_to_gt_indexs = ious_inf.max(dim=1)
+                ious_inf = torch.full_like(ious, -INF).t().contiguous().view(-1)
+                index = candidate_idxs.view(-1)[is_pos.view(-1)]
+                ious_inf[index] = ious.t().contiguous().view(-1)[index]
+                ious_inf = ious_inf.view(num_gt, -1).t()
 
+                anchors_to_gt_values, anchors_to_gt_indexs = ious_inf.max(dim=1)
                 cls_labels_per_im = labels_per_im[anchors_to_gt_indexs]
                 cls_labels_per_im[anchors_to_gt_values == -INF] = 0
                 matched_gts = bboxes_per_im[anchors_to_gt_indexs]
