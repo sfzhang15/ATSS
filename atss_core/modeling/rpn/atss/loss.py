@@ -164,19 +164,14 @@ class ATSSLossComputation(object):
                 anchor_num = anchors_cx_per_im.shape[0]
                 for ng in range(num_gt):
                     candidate_idxs[:, ng] += ng * anchor_num
-                e_anchors_cx = anchors_cx_per_im.view(1, -1).expand(
-                    num_gt, anchor_num).contiguous().view(-1)
-                e_anchors_cy = anchors_cy_per_im.view(1, -1).expand(
-                    num_gt, anchor_num).contiguous().view(-1)
+                e_anchors_cx = anchors_cx_per_im.view(1, -1).expand(num_gt, anchor_num).contiguous().view(-1)
+                e_anchors_cy = anchors_cy_per_im.view(1, -1).expand(num_gt, anchor_num).contiguous().view(-1)
                 candidate_idxs = candidate_idxs.view(-1)
-                _l = e_anchors_cx[candidate_idxs].view(
-                    -1, num_gt) - bboxes_per_im[:, 0]
-                t = e_anchors_cy[candidate_idxs].view(
-                    -1, num_gt) - bboxes_per_im[:, 1]
+                l = e_anchors_cx[candidate_idxs].view(-1, num_gt) - bboxes_per_im[:, 0]
+                t = e_anchors_cy[candidate_idxs].view(-1, num_gt) - bboxes_per_im[:, 1]
                 r = bboxes_per_im[:, 2] - e_anchors_cx[candidate_idxs].view(-1, num_gt)
-                b = bboxes_per_im[:, 3] - e_anchors_cy[candidate_idxs].view(
-                    -1, num_gt)
-                is_in_gts = torch.stack([_l, t, r, b], dim=1).min(dim=1)[0] > 0.01
+                b = bboxes_per_im[:, 3] - e_anchors_cy[candidate_idxs].view(-1, num_gt)
+                is_in_gts = torch.stack([l, t, r, b], dim=1).min(dim=1)[0] > 0.01
                 is_pos = is_pos & is_in_gts
 
                 # if an anchor box is assigned to multiple gts, the one with the highest IoU will be selected.
