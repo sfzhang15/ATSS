@@ -181,6 +181,35 @@ class ATSSLossComputation(object):
                 cls_labels_per_im = labels_per_im[anchors_to_gt_indexs]
                 cls_labels_per_im[anchors_to_gt_values == -INF] = 0
                 matched_gts = bboxes_per_im[anchors_to_gt_indexs]
+            elif self.cfg.MODEL.ATSS.POSITIVE_TYPE == 'TOPK':
+                gt_cx = (bboxes_per_im[:, 2] + bboxes_per_im[:, 0]) / 2.0
+                gt_cy = (bboxes_per_im[:, 3] + bboxes_per_im[:, 1]) / 2.0
+                gt_points = torch.stack((gt_cx, gt_cy), dim=1)
+
+                anchors_cx_per_im = (anchors_per_im.bbox[:, 2] + anchors_per_im.bbox[:, 0]) / 2.0
+                anchors_cy_per_im = (anchors_per_im.bbox[:, 3] + anchors_per_im.bbox[:, 1]) / 2.0
+                anchor_points = torch.stack((anchors_cx_per_im, anchors_cy_per_im), dim=1)
+
+                distances = (anchor_points[:, None, :] - gt_points[None, :, :]).pow(2).sum(-1).sqrt()
+                distances = distances / distances.max() / 1000
+                ious = boxlist_iou(anchors_per_im, targets_per_im)
+
+                is_pos = ious * False
+                for ng in range(num_gt):
+                    _, topk_idxs = (ious[:, ng] - distances[:, ng]).topk(self.cfg.MODEL.ATSS.TOPK, dim=0)
+                    l = anchors_cx_per_im[topk_idxs] - bboxes_per_im[ng, 0]
+                    t = anchors_cy_per_im[topk_idxs] - bboxes_per_im[ng, 1]
+                    r = bboxes_per_im[ng, 2] - anchors_cx_per_im[topk_idxs]
+                    b = bboxes_per_im[ng, 3] - anchors_cy_per_im[topk_idxs]
+                    is_in_gt = torch.stack([l, t, r, b], dim=1).min(dim=1)[0] > 0.01
+                    is_pos[topk_idxs[is_in_gt == 1], ng] = True
+
+                ious[is_pos == 0] = -INF
+                anchors_to_gt_values, anchors_to_gt_indexs = ious.max(dim=1)
+
+                cls_labels_per_im = labels_per_im[anchors_to_gt_indexs]
+                cls_labels_per_im[anchors_to_gt_values == -INF] = 0
+                matched_gts = bboxes_per_im[anchors_to_gt_indexs]
             elif self.cfg.MODEL.ATSS.POSITIVE_TYPE == 'IoU':
                 match_quality_matrix = boxlist_iou(targets_per_im, anchors_per_im)
                 matched_idxs = self.matcher(match_quality_matrix)

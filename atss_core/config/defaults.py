@@ -306,7 +306,7 @@ _C.MODEL.ATSS.USE_DCN_IN_TOWER = False
 _C.MODEL.ATSS.LOSS_ALPHA = 0.25
 _C.MODEL.ATSS.LOSS_GAMMA = 2.0
 
-# how to select positves: ATSS (Ours) , SSC (FCOS), IoU (RetinaNet)
+# how to select positves: ATSS (Ours) , SSC (FCOS), IoU (RetinaNet), TOPK
 _C.MODEL.ATSS.POSITIVE_TYPE = 'ATSS'
 
 # IoU parameter to select positves
