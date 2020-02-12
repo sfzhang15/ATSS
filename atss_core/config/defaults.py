@@ -316,7 +316,7 @@ _C.MODEL.ATSS.BG_IOU_THRESHOLD = 0.4
 # topk for selecting candidate positive samples from each level
 _C.MODEL.ATSS.TOPK = 9
 
-# regressing from a box or a point
+# regressing from a box ('BOX') or a point ('POINT')
 _C.MODEL.ATSS.REGRESSION_TYPE = 'BOX'
 
 # Weight for bbox_regression loss
