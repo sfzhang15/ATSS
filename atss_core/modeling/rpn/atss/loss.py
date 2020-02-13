@@ -148,7 +148,8 @@ class ATSSLossComputation(object):
                 for level, anchors_per_level in enumerate(anchors[im_i]):
                     end_idx = star_idx + num_anchors_per_level[level]
                     distances_per_level = distances[star_idx:end_idx, :]
-                    _, topk_idxs_per_level = distances_per_level.topk(self.cfg.MODEL.ATSS.TOPK, dim=0, largest=False)
+                    topk = min(self.cfg.MODEL.ATSS.TOPK, num_anchors_per_level[level])
+                    _, topk_idxs_per_level = distances_per_level.topk(topk, dim=0, largest=False)
                     candidate_idxs.append(topk_idxs_per_level + star_idx)
                     star_idx = end_idx
                 candidate_idxs = torch.cat(candidate_idxs, dim=0)
