@@ -8,7 +8,7 @@ By [Shifeng Zhang](http://www.cbsr.ia.ac.cn/users/sfzhang/), [Cheng Chi](https:/
 
 In this work, we first point out that the essential difference between anchor-based and anchor-free detection is actually **how to define positive and negative training samples**. Then we propose an Adaptive Training Sample Selection (ATSS) to automatically select positive and negative samples according to statistical characteristics of object, which significantly improves the performance of anchor-based and anchor-free detectors and bridges the gap between them. Finally, we demonstrate that tiling multiple anchors per location on the image to detect objects is a thankless operation under current situations. Extensive experiments conducted on MS COCO support our aforementioned analysis and conclusions. With the newly introduced ATSS, we improve state-of-the-art detectors by a large margin to 50.7% AP without introducing any overhead. For more details, please refer to our [paper](https://arxiv.org/abs/1912.02424).
 
-*Note: The lite version of our ATSS has been merged to the official code of [FCOS](https://github.com/tianzhi0549/FCOS) as the [center sampling](https://github.com/tianzhi0549/FCOS/blob/master/fcos_core/modeling/rpn/fcos/loss.py#L166-L173) improvement, which improves its performance by ~0.8%. The full version of our ATSS can further improve the performance.*
+*Note: The lite version of our ATSS has been merged to the official code of [FCOS](https://github.com/tianzhi0549/FCOS) as the [center sampling](https://github.com/tianzhi0549/FCOS/blob/master/fcos_core/modeling/rpn/fcos/loss.py#L166-L173) improvement, which improves its performance by ~0.8%. The full version of our ATSS can further improve its performance.*
 
 ## Installation
 This ATSS implementation is based on [FCOS](https://github.com/tianzhi0549/FCOS) and [maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark) and the installation is the same as them. Please check [INSTALL.md](INSTALL.md) for installation instructions.
@@ -78,10 +78,10 @@ Any pull requests or issues are welcome.
 ## Citations
 Please cite our paper in your publications if it helps your research:
 ```
-@article{zhang2019bridging,
-  title   =  {Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection},
-  author  =  {Zhang, Shifeng and Chi, Cheng and Yao, Yongqiang and Lei, Zhen and Li, Stan Z.},
-  journal =  {arXiv preprint arXiv:1912.02424},
-  year    =  {2019}
+@inproceedings{zhang2020bridging,
+  title     =  {Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection},
+  author    =  {Zhang, Shifeng and Chi, Cheng and Yao, Yongqiang and Lei, Zhen and Li, Stan Z.},
+  booktitle =  {CVPR},
+  year      =  {2020}
 }
 ```
