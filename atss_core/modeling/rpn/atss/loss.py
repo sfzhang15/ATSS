@@ -129,6 +129,8 @@ class ATSSLossComputation(object):
                 cls_labels_per_im[locations_to_min_area == INF] = 0
                 matched_gts = bboxes_per_im[locations_to_gt_inds]
             elif self.cfg.MODEL.ATSS.POSITIVE_TYPE == 'ATSS':
+                num_anchors_per_loc = len(self.cfg.MODEL.ATSS.ASPECT_RATIOS) * self.cfg.MODEL.ATSS.SCALES_PER_OCTAVE
+
                 num_anchors_per_level = [len(anchors_per_level.bbox) for anchors_per_level in anchors[im_i]]
                 ious = boxlist_iou(anchors_per_im, targets_per_im)
 
@@ -148,7 +150,7 @@ class ATSSLossComputation(object):
                 for level, anchors_per_level in enumerate(anchors[im_i]):
                     end_idx = star_idx + num_anchors_per_level[level]
                     distances_per_level = distances[star_idx:end_idx, :]
-                    topk = min(self.cfg.MODEL.ATSS.TOPK, num_anchors_per_level[level])
+                    topk = min(self.cfg.MODEL.ATSS.TOPK * num_anchors_per_loc, num_anchors_per_level[level])
                     _, topk_idxs_per_level = distances_per_level.topk(topk, dim=0, largest=False)
                     candidate_idxs.append(topk_idxs_per_level + star_idx)
                     star_idx = end_idx
@@ -288,20 +290,20 @@ class ATSSLossComputation(object):
 
         cls_loss = self.cls_loss_func(box_cls_flatten, labels_flatten.int()) / num_pos_avg_per_gpu
 
-        if pos_inds.numel() > 0:
-            box_regression_flatten = box_regression_flatten[pos_inds]
-            reg_targets_flatten = reg_targets_flatten[pos_inds]
-            anchors_flatten = anchors_flatten[pos_inds]
-            centerness_flatten = centerness_flatten[pos_inds]
-            centerness_targets = self.compute_centerness_targets(reg_targets_flatten, anchors_flatten)
+        box_regression_flatten = box_regression_flatten[pos_inds]
+        reg_targets_flatten = reg_targets_flatten[pos_inds]
+        anchors_flatten = anchors_flatten[pos_inds]
+        centerness_flatten = centerness_flatten[pos_inds]
+        centerness_targets = self.compute_centerness_targets(reg_targets_flatten, anchors_flatten)
+        sum_centerness_targets_avg_per_gpu = reduce_sum(centerness_targets.sum()).item() / float(num_gpus)
 
-            sum_centerness_targets_avg_per_gpu = reduce_sum(centerness_targets.sum()).item() / float(num_gpus)
+        if pos_inds.numel() > 0:
             reg_loss = self.GIoULoss(box_regression_flatten, reg_targets_flatten, anchors_flatten,
                                      weight=centerness_targets) / sum_centerness_targets_avg_per_gpu
             centerness_loss = self.centerness_loss_func(centerness_flatten, centerness_targets) / num_pos_avg_per_gpu
         else:
             reg_loss = box_regression_flatten.sum()
-            centerness_loss = reg_loss * 0
+            centerness_loss = centerness_flatten.sum()
 
         return cls_loss, reg_loss * self.cfg.MODEL.ATSS.REG_LOSS_WEIGHT, centerness_loss
 
